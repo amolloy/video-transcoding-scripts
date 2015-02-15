@@ -47,6 +47,7 @@ usage() {
     --720p          constrain video to fit within 1280x720 pixel bounds
     --audio TRACK   select main audio track (default: 1)
     --burn TRACK    burn subtitle track (default: first forced track, if any)
+    --touch			preserve file times
 
     --version       output version information and exit
 
@@ -175,6 +176,8 @@ Other options:
                     import chapter names from \`.csv\` text file
                         (in NUMBER,NAME format, e.g. "1,Intro")
     --no-log        don't write log file
+	--touch			copies file creation, modification, and access times from the
+						original file
     --debug         output diagnostic information to \`stderr\` and exit
                         (with \`HandBrakeCLI\` command line sent to \`stdout\`)
     --version       output version information and exit
@@ -270,6 +273,7 @@ passthru_options=''
 chapter_names_file=''
 write_log='yes'
 debug=''
+dotouch=''
 
 while [ "$1" ]; do
     case $1 in
@@ -585,6 +589,9 @@ while [ "$1" ]; do
                 shift
             fi
             ;;
+        --touch)
+        	dotouch='yes'
+        	;;
         -*)
             syntax_error "unrecognized option: $1"
             ;;
@@ -1478,5 +1485,9 @@ time {
             mkvpropedit --quiet --edit track:s1 --set flag-forced=1 "$output" || exit 1
 
         fi
+        
+        if [ "$dotouch" ]; then 
+			touch -r "$input" "$output"
+		fi
     fi
 }
